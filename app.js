@@ -43,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const qrModalDesc = document.getElementById("qr-modal-desc");
     const qrCodeContainer = document.getElementById("qr-code-container");
     const qrCodeImg = document.getElementById("qr-code-img");
-    const qrDirectLink = document.getElementById("qr-direct-link");
     const qrActionBtn = document.getElementById("qr-action-btn");
 
     // Controls
@@ -158,6 +157,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 { emoji: "🦋", x: 275, y: 285, scale: 1.1, angle: 20 },
                 { emoji: "🦋", x: 12, y: 405, scale: 1.0, angle: -30 },
                 { emoji: "✨", x: 278, y: 495, scale: 0.85, angle: 10 }
+            ]
+        },
+        {
+            id: "maroon-gold-classic",
+            name: "Maroon Emas",
+            bg: "#5e0d16",
+            isGradient: false,
+            textColor: "#dfb15b",
+            decorations: [
+                { emoji: "✨", x: 18, y: 15, scale: 0.9, angle: 10 },
+                { emoji: "👑", x: 275, y: 35, scale: 0.95, angle: -15 },
+                { emoji: "✨", x: 280, y: 200, scale: 0.8, angle: 5 },
+                { emoji: "⚜️", x: 12, y: 350, scale: 0.9, angle: 0 },
+                { emoji: "👑", x: 18, y: 505, scale: 1.0, angle: 15 },
+                { emoji: "✨", x: 275, y: 485, scale: 1.1, angle: -5 }
+            ]
+        },
+        {
+            id: "maroon-gold-butterfly",
+            name: "Senja Emas",
+            bg: "gradient-maroon",
+            isGradient: true,
+            textColor: "#f2d179",
+            decorations: [
+                { emoji: "🦋", x: 280, y: 25, scale: 1.1, angle: 30 },
+                { emoji: "✨", x: 15, y: 120, scale: 0.85, angle: -10 },
+                { emoji: "🦋", x: 18, y: 280, scale: 1.0, angle: -20 },
+                { emoji: "🍁", x: 275, y: 350, scale: 0.9, angle: 15 },
+                { emoji: "🦋", x: 278, y: 500, scale: 1.2, angle: 10 },
+                { emoji: "✨", x: 12, y: 495, scale: 0.8, angle: 0 }
             ]
         }
     ];
@@ -452,14 +481,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const tempCanvas = document.createElement("canvas");
         const ctx = tempCanvas.getContext("2d");
 
-        // Target capture output size: 920x560 (3:2 landscape aspect ratio cropped from webcam)
-        tempCanvas.width = 920;
+        // Target capture output size: 840x560 (3:2 landscape aspect ratio cropped from webcam)
+        tempCanvas.width = 840;
         tempCanvas.height = 560;
 
         const videoW = videoElement.videoWidth;
         const videoH = videoElement.videoHeight;
 
-        const targetAspect = 920 / 560;
+        const targetAspect = 840 / 560;
         let sourceW, sourceH, sourceX, sourceY;
 
         if (videoW / videoH > targetAspect) {
@@ -475,9 +504,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Draw flipped mirrored image on canvas
-        ctx.translate(920, 0);
+        ctx.translate(840, 0);
         ctx.scale(-1, 1);
-        ctx.drawImage(videoElement, sourceX, sourceY, sourceW, sourceH, 0, 0, 920, 560);
+        ctx.drawImage(videoElement, sourceX, sourceY, sourceW, sourceH, 0, 0, 840, 560);
 
         const dataUrl = tempCanvas.toDataURL("image/png");
         capturedPhotos.push(dataUrl);
@@ -549,7 +578,6 @@ document.addEventListener("DOMContentLoaded", () => {
             qrModalTitle.innerText = "Menyiapkan Foto...";
             qrModalDesc.innerText = "Mohon tunggu, foto sedang dirender dan diunggah ke cloud.";
             qrCodeContainer.style.display = "none";
-            qrDirectLink.style.display = "none";
             qrActionBtn.disabled = true;
             qrActionBtn.innerText = "Mengunggah...";
             
@@ -579,7 +607,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 qrModalTitle.innerText = "Mengunggah Kembali...";
                 qrModalDesc.innerText = "Mohon tunggu, sedang mencoba mengunggah foto kembali.";
                 qrCodeContainer.style.display = "none";
-                qrDirectLink.style.display = "none";
                 qrActionBtn.disabled = true;
                 qrActionBtn.innerText = "Mengunggah...";
                 exportAndUploadStoryCollage();
@@ -669,6 +696,9 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (template.bg === "gradient-butterflies") {
                 grad.addColorStop(0, "#ffecd2");
                 grad.addColorStop(1, "#fcb69f");
+            } else if (template.bg === "gradient-maroon") {
+                grad.addColorStop(0, "#721625");
+                grad.addColorStop(1, "#3a030d");
             }
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 1080, 1920);
@@ -747,9 +777,17 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         
+        const textToDraw = watermarkText.toUpperCase();
+        
         let fontSize = 44;
         ctx.font = `bold ${fontSize}px 'Lora', serif`;
-        let textWidth = ctx.measureText(watermarkText).width;
+        
+        // Apply letter spacing if supported to match the CSS look
+        if ('letterSpacing' in ctx) {
+            ctx.letterSpacing = "0.18em";
+        }
+        
+        let textWidth = ctx.measureText(textToDraw).width;
         
         // Auto scale down font size if the text exceeds maximum boundaries
         const maxTextWidth = 840; 
@@ -759,7 +797,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         ctx.fillStyle = textColor;
-        ctx.fillText(watermarkText, 1080 / 2, 1835);
+        ctx.fillText(textToDraw, 1080 / 2, 1860);
         ctx.restore();
     }
 
@@ -829,16 +867,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     // Update UI with success state
                     qrStatusIcon.innerText = "✅";
-                    qrModalTitle.innerText = "Foto Siap di HP!";
+                    qrModalTitle.innerText = "Momen #TesTulisJejak Sudah Siap!";
                     qrModalDesc.innerText = "Scan QR Code di bawah menggunakan kamera HP untuk mengunduh foto Anda langsung.";
                     
                     // Set QR Code Image Src
                     qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(uploadUrl)}`;
                     qrCodeContainer.style.display = "block";
-                    
-                    // Set direct link
-                    qrDirectLink.href = uploadUrl;
-                    qrDirectLink.style.display = "inline-block";
                     
                     // Enable action button for resetting photobooth
                     qrActionBtn.disabled = false;

@@ -941,6 +941,7 @@ p{
 .color-gradient-metallic{ background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); }
 .color-gradient-aurora{ background: linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%); }
 .color-gradient-butterflies{ background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+.color-gradient-maroon{ background: linear-gradient(135deg, #721625 0%, #3a030d 100%); }
 
 /* Photo Filters List */
 .filter-selector-scroll{
