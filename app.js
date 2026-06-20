@@ -4,7 +4,7 @@
 
 // IMGBB API KEY CONFIGURATION
 // Silakan dapatkan API Key gratis Anda di https://api.imgbb.com/ dan masukkan di sini
-const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE";
+const IMGBB_API_KEY = "fc0ab04451ee4654d2185f9f13f35404";
 
 document.addEventListener("DOMContentLoaded", () => {
     
