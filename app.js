@@ -203,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Web Audio Synthesizer variables
     let audioCtx = null;
     let emailSentSuccess = false;
-    let currentPhotoIndex = 0;
 
     // Initializer
     init();
@@ -358,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
             
-            triggerSingleCapture();
+            triggerSequentialCapture();
         });
     }
 
@@ -399,7 +398,6 @@ document.addEventListener("DOMContentLoaded", () => {
             thumb.style.backgroundImage = "none";
             thumb.classList.remove("captured");
         }
-        currentPhotoIndex = 0; // Reset index to start from the first photo
         takeIndicator.innerText = "Foto 1 dari 3";
         isCapturing = false;
         triggerCaptureBtn.style.opacity = "1";
@@ -413,45 +411,46 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => flashEffect.classList.remove("trigger"), 500);
     }
 
-    async function triggerSingleCapture() {
+    async function triggerSequentialCapture() {
         isCapturing = true;
         triggerCaptureBtn.style.opacity = "0.4";
         triggerCaptureBtn.style.pointerEvents = "none";
 
-        // Show the countdown for the current photo index
-        takeIndicator.innerText = `Foto ${currentPhotoIndex + 1} dari 3`;
-        await runCountdown();
-        captureFrame(currentPhotoIndex);
-        
-        // After capturing, increment index
-        currentPhotoIndex++;
-
-        if (currentPhotoIndex < 3) {
-            // Wait for user to get ready and click again for next photo
-            setTimeout(() => {
-                isCapturing = false;
-                triggerCaptureBtn.style.opacity = "1";
-                triggerCaptureBtn.style.pointerEvents = "auto";
-                takeIndicator.innerText = `Foto ${currentPhotoIndex + 1} dari 3`;
-                showToast("Siap untuk foto berikutnya!");
-            }, 1000);
-        } else {
-            // All 3 photos taken
-            showToast("Semua Foto Berhasil Diambil!");
-            stopCamera();
-            
-            // Load captured photos in editor preview
-            for (let i = 0; i < 3; i++) {
-                const previewBox = document.getElementById(`strip-photo-${i}`);
-                previewBox.style.backgroundImage = `url(${capturedPhotos[i]})`;
-            }
-
-            setTimeout(() => {
-                showScreen("screen-editor");
-                applyFilter(currentFilter);
-                applyTemplate(currentTemplateId); // Apply initial selected template
-            }, 800);
+        for (let count = 0; count < 3; count++) {
+            takeIndicator.innerText = `Foto ${count + 1} dari 3`;
+            await runCountdown();
+            captureFrame(count);
+            await delay(1200);
         }
+
+        showToast("Semua Foto Berhasil Diambil!");
+        stopCamera();
+        
+        // Load captured photos in editor preview
+        for (let i = 0; i < 3; i++) {
+            const previewBox = document.getElementById(`strip-photo-${i}`);
+            previewBox.style.backgroundImage = `url(${capturedPhotos[i]})`;
+        }
+
+        setTimeout(() => {
+            showScreen("screen-editor");
+            applyFilter(currentFilter);
+            applyTemplate(currentTemplateId); // Apply initial selected template
+
+            // Auto-trigger collage upload and show QR modal
+            emailSentSuccess = false;
+            qrModal.classList.add("show");
+            
+            // Set initial loading state in modal
+            qrStatusIcon.innerText = "⌛";
+            qrModalTitle.innerText = "Menyiapkan Foto...";
+            qrModalDesc.innerText = "Mohon tunggu, foto sedang dirender dan diunggah ke cloud.";
+            qrCodeContainer.style.display = "none";
+            qrActionBtn.disabled = true;
+            qrActionBtn.innerText = "Mengunggah...";
+            
+            exportAndUploadStoryCollage();
+        }, 800);
     }
 
     function runCountdown() {
@@ -473,7 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     triggerFlash();
                     resolve();
                 }
-            }, 900);
+            }, 1000);
         });
     }
 
