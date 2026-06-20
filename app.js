@@ -2,9 +2,9 @@
  * KUPU PHOTOBOOTH - 3 Grid IG Story App Logic
  */
 
-// IMGUR CLIENT ID CONFIGURATION
-// Silakan masukkan Client-ID Imgur kustom Anda di sini jika diinginkan.
-const IMGUR_CLIENT_ID = "66fbe5ff6fa4bfa";
+// IMGBB API KEY CONFIGURATION
+// Silakan dapatkan API Key gratis Anda di https://api.imgbb.com/ dan masukkan di sini
+const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE";
 
 document.addEventListener("DOMContentLoaded", () => {
     
@@ -808,21 +808,24 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- IMGUR ANONYMOUS UPLOAD & QR CODE RENDERING ---
     function uploadCollageBlob(canvas) {
         canvas.toBlob(async (blob) => {
+            if (IMGBB_API_KEY === "YOUR_IMGBB_API_KEY_HERE" || !IMGBB_API_KEY) {
+                console.error("ImgBB API Key is not configured!");
+                handleUploadFailure("API Key ImgBB belum dikonfigurasi di app.js!");
+                return;
+            }
+
             const formData = new FormData();
             formData.append("image", blob);
 
             try {
-                const response = await fetch("https://api.imgur.com/3/image", {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
                     method: "POST",
-                    headers: {
-                        Authorization: `Client-ID ${IMGUR_CLIENT_ID || '66fbe5ff6fa4bfa'}`
-                    },
                     body: formData
                 });
 
                 const result = await response.json();
-                if (response.ok && result.success && result.data && result.data.link) {
-                    const uploadUrl = result.data.link;
+                if (response.ok && result.success && result.data && result.data.url) {
+                    const uploadUrl = result.data.url;
                     
                     // Update UI with success state
                     qrStatusIcon.innerText = "✅";
@@ -842,20 +845,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     qrActionBtn.innerText = "Foto Baru (Selesai)";
                     emailSentSuccess = true; // Use this variable to track successful upload state
                 } else {
-                    console.error("Imgur upload error:", result);
-                    handleUploadFailure();
+                    console.error("ImgBB upload error:", result);
+                    handleUploadFailure(result.error ? result.error.message : "Gagal mengunggah ke ImgBB.");
                 }
             } catch (error) {
-                console.error("Imgur upload connection error:", error);
-                handleUploadFailure();
+                console.error("ImgBB upload connection error:", error);
+                handleUploadFailure("Masalah koneksi jaringan.");
             }
         }, "image/png");
     }
 
-    function handleUploadFailure() {
+    function handleUploadFailure(customMsg = null) {
         qrStatusIcon.innerText = "❌";
         qrModalTitle.innerText = "Gagal Mengunggah Foto";
-        qrModalDesc.innerText = "Terjadi gangguan saat mengunggah foto ke cloud. Silakan coba kembali.";
+        qrModalDesc.innerText = customMsg || "Terjadi gangguan saat mengunggah foto ke cloud. Silakan coba kembali.";
         qrCodeContainer.style.display = "none";
         qrDirectLink.style.display = "none";
         qrActionBtn.disabled = false;
